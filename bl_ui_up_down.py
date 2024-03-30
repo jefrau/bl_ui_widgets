@@ -3,7 +3,6 @@ from . bl_ui_widget import *
 import blf
 
 class BL_UI_Up_Down(BL_UI_Widget):
-    
     def __init__(self, x, y):
 
         self.__up_down_width = 16
@@ -26,7 +25,7 @@ class BL_UI_Up_Down(BL_UI_Widget):
 
         self.x_screen = x
         self.y_screen = y
-        
+
         self._text_size = 14
         self._decimals = 2
 
@@ -105,10 +104,10 @@ class BL_UI_Up_Down(BL_UI_Widget):
         area_height = self.get_area_height()
 
         self.shader.bind()
-        
+
         color = self._color
         text_color = self._text_color
-        
+
         # pressed
         if self.__state == 1:
             color = self._select_color
@@ -118,7 +117,7 @@ class BL_UI_Up_Down(BL_UI_Widget):
             color = self._hover_color
 
         self.shader.uniform_float("color", color)
-        
+
         self.batch_up.draw(self.shader)
 
         color = self._color
@@ -132,28 +131,32 @@ class BL_UI_Up_Down(BL_UI_Widget):
             color = self._hover_color
 
         self.shader.uniform_float("color", color)
-        self.batch_down.draw(self.shader)        
-        
+        self.batch_down.draw(self.shader)
+
         # Draw value text
         sFormat = "{:0." + str(self._decimals) + "f}"
-        blf.size(0, self._text_size, 72)
-        
+
+        if bpy.app.version < (3, 5, 0):
+            blf.size(0, self._text_size, 72)
+        else:
+            blf.size(0, self._text_size)
+
         sValue = sFormat.format(self.__up_down_value)
         size = blf.dimensions(0, sValue)
 
         y_pos = area_height - self.y_screen - size[1] - 2
         x_pos = self.x_screen + 2 * self.__up_down_width + 10
-                      
+
         blf.position(0, x_pos, y_pos, 0)
 
         r, g, b, a = self._text_color
         blf.color(0, r, g, b, a)
-            
+
         blf.draw(0, sValue)
 
     def create_up_down_buttons(self):
         # Up / down triangle
-        # 
+        #
         #        0
         #     1 /\ 2
         #       --
@@ -162,10 +165,10 @@ class BL_UI_Up_Down(BL_UI_Widget):
 
         h = self.__up_down_height
         w = self.__up_down_width / 2.0
-        
+
         pos_y = area_height - self.y_screen
         pos_x = self.x_screen
-               
+
         vertices_up = (
                     (pos_x + w  , pos_y    ),
                     (pos_x      , pos_y - h),
@@ -178,21 +181,25 @@ class BL_UI_Up_Down(BL_UI_Widget):
                     (pos_x      , pos_y    ),
                     (pos_x + w  , pos_y - h),
                     (pos_x + 2*w, pos_y    )
-                    
+
                    )
-                    
-        self.shader = gpu.shader.from_builtin('2D_UNIFORM_COLOR')
+
+        if bpy.app.version < (3, 5, 0):
+            self.shader = gpu.shader.from_builtin("2D_UNIFORM_COLOR")
+        else:
+            self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
+
         self.batch_up = batch_for_shader(self.shader, 'TRIS', {"pos" : vertices_up})
         self.batch_down = batch_for_shader(self.shader, 'TRIS', {"pos" : vertices_down})
-        
-    def update(self, x, y): 
+
+    def update(self, x, y):
 
         self.x_screen = x
         self.y_screen = y
-       
+
         self.create_up_down_buttons()
 
- 
+
     def set_value_change(self, value_change_func):
         self.value_change_func = value_change_func
 
@@ -202,9 +209,9 @@ class BL_UI_Up_Down(BL_UI_Widget):
         pos_y = area_height - self.y_screen
 
         if (
-            (self.x_screen <= x <= self.x_screen + self.__up_down_width) and 
+            (self.x_screen <= x <= self.x_screen + self.__up_down_width) and
             (pos_y >= y >= pos_y - self.__up_down_height)
-            ): 
+            ):
             return True
 
         return False
@@ -216,13 +223,13 @@ class BL_UI_Up_Down(BL_UI_Widget):
         pos_x = self.x_screen + self.__up_down_width + 2
 
         if (
-            (pos_x <= x <= pos_x + self.__up_down_width) and 
+            (pos_x <= x <= pos_x + self.__up_down_width) and
             (pos_y >= y >= pos_y - self.__up_down_height)
-            ): 
+            ):
             return True
 
         return False
-    
+
     def is_in_rect(self, x, y):
         return self.is_in_up(x,y) or self.is_in_down(x,y)
 
@@ -239,8 +246,8 @@ class BL_UI_Up_Down(BL_UI_Widget):
                 self.value_change_func(self, self.__up_down_value)
             except:
                 pass
-                 
-    def mouse_down(self, x, y):    
+
+    def mouse_down(self, x, y):
         if self.is_in_up(x,y):
             self.__state = 1
             self.inc_value()
@@ -250,7 +257,7 @@ class BL_UI_Up_Down(BL_UI_Widget):
             self.__state = 3
             self.dec_value()
             return True
-        
+
         return False
 
     def inc_value(self):
@@ -258,22 +265,22 @@ class BL_UI_Up_Down(BL_UI_Widget):
 
     def dec_value(self):
         self.set_value(self.__up_down_value - 1)
-    
+
     def mouse_move(self, x, y):
         if self.is_in_up(x,y):
             if(self.__state != 1):
-                
+
                 # hover state
                 self.__state = 2
 
         elif self.is_in_down(x,y):
             if(self.__state != 3):
-                
+
                 # hover state
                 self.__state = 4
 
         else:
             self.__state = 0
- 
+
     def mouse_up(self, x, y):
         self.__state = 0

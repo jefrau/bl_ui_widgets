@@ -2,25 +2,24 @@ import bpy
 
 from bpy.types import Operator
 
-from . bl_ui_label import * 
+from . bl_ui_label import *
 from . bl_ui_button import *
 from . bl_ui_checkbox import *
 from . bl_ui_slider import *
 from . bl_ui_up_down import *
 from . bl_ui_drag_panel import *
 from . bl_ui_draw_op import *
-    
+
 class DP_OT_draw_operator(BL_UI_OT_draw_operator):
-    
     bl_idname = "object.dp_ot_draw_operator"
     bl_label = "bl ui widgets custom operator"
-    bl_description = "Demo operator for bl ui widgets" 
+    bl_description = "Demo operator for bl ui widgets"
     bl_options = {'REGISTER'}
-    	
+
     def __init__(self):
-        
+
         super().__init__()
-            
+
         self.panel = BL_UI_Drag_Panel(100, 300, 300, 290)
         self.panel.bg_color = (0.2, 0.2, 0.2, 0.9)
 
@@ -38,7 +37,7 @@ class DP_OT_draw_operator(BL_UI_OT_draw_operator):
         self.slider.decimals = 1
         self.slider.show_min_max = True
         self.slider.set_value_change(self.on_slider_value_change)
-        
+
         self.button1 = BL_UI_Button(20, 100, 120, 30)
         self.button1.bg_color = (0.2, 0.8, 0.8, 0.8)
         self.button1.hover_bg_color = (0.2, 0.9, 0.9, 1.0)
@@ -47,7 +46,7 @@ class DP_OT_draw_operator(BL_UI_OT_draw_operator):
         # self.button1.set_image_size((24,24))
         self.button1.set_image_position((4,2))
         self.button1.set_mouse_down(self.button1_press)
-         
+
         self.button2 = BL_UI_Button(160, 100, 120, 30)
         self.button2.bg_color = (0.2, 0.8, 0.8, 0.8)
         self.button2.hover_bg_color = (0.2, 0.9, 0.9, 1.0)
@@ -88,7 +87,7 @@ class DP_OT_draw_operator(BL_UI_OT_draw_operator):
         self.chb_2.text_size = 14
         self.chb_2.text_color = (0.2, 0.9, 0.9, 1.0)
 
-        
+
     def on_invoke(self, context, event):
 
         # Add new widgets here (TODO: perhaps a better, more automated solution?)
@@ -102,15 +101,15 @@ class DP_OT_draw_operator(BL_UI_OT_draw_operator):
         self.panel.add_widgets(widgets_panel)
 
         # Open the panel at the mouse location
-        self.panel.set_location(event.mouse_x, 
+        self.panel.set_location(event.mouse_x,
                                 context.area.height - event.mouse_y + 20)
-       
+
 
     def on_chb_visibility_state_change(self, checkbox, state):
         active_obj = bpy.context.view_layer.objects.active
         if active_obj is not None:
             active_obj.hide_viewport = not state
-   
+
 
     def on_up_down_value_change(self, up_down, value):
         active_obj = bpy.context.view_layer.objects.active
@@ -122,12 +121,12 @@ class DP_OT_draw_operator(BL_UI_OT_draw_operator):
         if active_obj is not None:
             active_obj.scale = (1, 1, value)
 
-    # Button press handlers    
+    # Button press handlers
     def button1_press(self, widget):
         self.slider.set_value(3.0)
         print("Button '{0}' is pressed".format(widget.text))
 
-        
+
     def button2_press(self, widget):
         print("Button '{0}' is pressed".format(widget.text))
         active_obj = bpy.context.view_layer.objects.active

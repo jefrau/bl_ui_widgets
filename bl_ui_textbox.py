@@ -5,7 +5,6 @@ import bpy
 
 
 class BL_UI_Textbox(BL_UI_Widget):
-
     def __init__(self, x, y, width, height):
         super().__init__(x, y, width, height)
         self._text_color = (1.0, 1.0, 1.0, 1.0)
@@ -96,12 +95,12 @@ class BL_UI_Textbox(BL_UI_Widget):
 
     @is_numeric.setter
     def is_numeric(self, value):
-        self._is_numeric = value   
+        self._is_numeric = value
 
     def update(self, x, y):
         super().update(x, y)
 
-        if self.has_label:       
+        if self.has_label:
             self.update_label()
 
         self._textpos = [x, y]
@@ -116,11 +115,11 @@ class BL_UI_Textbox(BL_UI_Widget):
 
         # bottom left, top left, top right, bottom right
         vertices_outline = (
-                    (self.x_screen, y_screen_flip), 
-                    (self.x_screen + self.width + self._label_width, y_screen_flip), 
+                    (self.x_screen, y_screen_flip),
+                    (self.x_screen + self.width + self._label_width, y_screen_flip),
                     (self.x_screen + self.width + self._label_width, y_screen_flip - self.height),
                     (self.x_screen, y_screen_flip - self.height))
-                    
+
         self.batch_outline = batch_for_shader(self.shader, 'LINE_LOOP', {"pos" : vertices_outline})
 
         indices = ((0, 1, 2), (2, 3, 1))
@@ -129,11 +128,11 @@ class BL_UI_Textbox(BL_UI_Widget):
 
         # bottom left, top left, top right, bottom right
         vertices_label_bg = (
-                    (lb_x, y_screen_flip), 
-                    (lb_x + self._label_width, y_screen_flip), 
+                    (lb_x, y_screen_flip),
+                    (lb_x + self._label_width, y_screen_flip),
                     (lb_x, y_screen_flip - self.height),
                     (lb_x + self._label_width, y_screen_flip - self.height))
-                    
+
         self.batch_label_bg = batch_for_shader(self.shader, 'TRIS', {"pos" : vertices_label_bg}, indices=indices)
 
     def get_carret_pos_px(self):
@@ -160,7 +159,7 @@ class BL_UI_Textbox(BL_UI_Widget):
 
         if not self.visible:
             return
-            
+
         super().draw()
 
         area_height = self.get_area_height()
@@ -198,7 +197,11 @@ class BL_UI_Textbox(BL_UI_Widget):
         self.shader.uniform_float("color", color)
 
     def draw_text(self, area_height):
-        blf.size(0, self._text_size, 72)
+        if bpy.app.version < (3, 5, 0):
+            blf.size(0, self._text_size, 72)
+        else:
+            blf.size(0, self._text_size)
+
         size = blf.dimensions(0, self._text)
 
         textpos_y = area_height - self._textpos[1] - (self.height + size[1]) / 2.0
@@ -220,7 +223,7 @@ class BL_UI_Textbox(BL_UI_Widget):
             value = self._text[:index] + event.ascii + self._text[index:]
             if self._is_numeric and not (event.ascii.isnumeric() or event.ascii in ['.', ',', '-']):
                 return False
-                
+
             self._text = value
             self._carret_pos += 1
         elif event.type == 'BACK_SPACE':
